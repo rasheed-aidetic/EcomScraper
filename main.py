@@ -10,19 +10,21 @@ load_dotenv()
 
 def main():
     initialize_db()
-    for website in WEBSITES:
-        print(f"Checking platform for {website}")
-        platform = check_platform(website)
-
+    for website_url in WEBSITES:
+        print(f"Checking platform for {website_url}")
+        platform = check_platform(website_url)
+        website_name = website_url.split("//")[-1].replace("www.", "").split(".")[0]
         if platform == "Shopify":
-            print(f"{website} is a Shopify site. Starting scraping...")
+            print(f"{website_url} is a Shopify site. Starting scraping...")
             try:
-                scrape_website(website, insert_product_data)
+                scrape_website(website_url, website_name, insert_product_data)
             except Exception as e:
-                print(f"Error scraping {website}: {e}")
+                import traceback
+                traceback.print_exc()
+                print(f"Error scraping {website_url}: {e}")
         else:
             print(
-                f"{website} is not a supported platform. Detected platform: {platform}"
+                f"{website_url} is not a supported platform. Detected platform: {platform}"
             )
 
     print("Data scraping completed.")

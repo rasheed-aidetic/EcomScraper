@@ -3,8 +3,8 @@ from urllib.request import urlretrieve
 import requests
 
 
-def save_images(product_id, images):
-    folder_name = f"images/{product_id}"
+def save_images(product_id, website_name, images):
+    folder_name = f"images/{website_name}/{product_id}"
     os.makedirs(folder_name, exist_ok=True)
     for idx, image in enumerate(images):
         image_url = image.get("src")

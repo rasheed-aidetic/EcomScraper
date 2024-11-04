@@ -15,6 +15,9 @@ def initialize_db():
             """
         CREATE TABLE IF NOT EXISTS products (
             id INTEGER PRIMARY KEY,
+            website_name TEXT,
+            website_url TEXT,
+            product_url TEXT,
             product_id INTEGER,
             title TEXT,
             description TEXT,
@@ -36,18 +39,21 @@ def insert_product_data(data, folder_name):
     cursor = conn.cursor()
     cursor.execute(
         """
-    INSERT INTO products (product_id, title, description, price, vendor, product_type, tags, image_folder)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO products (website_name, website_url, product_url, product_id, title, description, price, vendor, product_type, tags, image_folder)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """,
-        (
-            data["id"],
-            data.get("title"),
-            data.get("body_html"),
-            float(data["variants"][0].get("price", 0)),
+        (   
+            data["website_name"],
+            data["website_url"],
+            data["product_url"],
+            data["product_id"],
+            data.get("product_title"),
+            data.get("product_description"),
+            data.get("price"),
             data.get("vendor"),
             data.get("product_type"),
-            ", ".join(data.get("tags", [])),
-            folder_name,
+            data.get("tags"),
+            data.get("image_folder"),
         ),
     )
     conn.commit()
