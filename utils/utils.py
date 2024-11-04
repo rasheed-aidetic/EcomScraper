@@ -3,15 +3,34 @@ from urllib.request import urlretrieve
 import requests
 
 
+import os
+from urllib.request import urlretrieve
+import backoff
+import urllib.error
+
+@backoff.on_exception(
+    backoff.expo,  # Exponential backoff
+    (urllib.error.URLError, ConnectionResetError),  # Errors to retry on
+    max_tries=5  # Maximum number of retries
+)
+def download_image(image_url, image_path):
+    urlretrieve(image_url, image_path)
+
 def save_images(product_id, website_name, images):
     folder_name = f"images/{website_name}/{product_id}"
     os.makedirs(folder_name, exist_ok=True)
+    
     for idx, image in enumerate(images):
         image_url = image.get("src")
         if image_url:
             image_path = os.path.join(folder_name, f"image_{idx + 1}.jpg")
-            urlretrieve(image_url, image_path)
+            try:
+                download_image(image_url, image_path)
+            except Exception as e:
+                print(f"Failed to download {image_url}: {e}")
+    
     return folder_name
+
 
 
 def is_shopify_site(url):
