@@ -1,7 +1,8 @@
 # main.py
 from config import WEBSITES
 from db.database import initialize_db, insert_product_data
-from shopify_scraper.scraper import scrape_website
+from shopify_scraper.scraper import scrape_website as scrape_shopify_website
+from woocommerce_scrapper.scraper import scrape_website as scrape_woocommerce_website
 from utils.utils import check_platform
 from dotenv import load_dotenv
 import concurrent.futures
@@ -25,7 +26,17 @@ def main():
         if platform == "Shopify":
             print(f"{website_url} is a Shopify site. Starting scraping...")
             try:
-                scrape_website(website_url, website_name, insert_product_data)
+                scrape_shopify_website(website_url, website_name, insert_product_data)
+                print(f"Scraping completed for {website_url}")
+            except Exception as e:
+                traceback.print_exc()
+                print(f"Error scraping {website_url}: {e}")
+
+        elif platform == "Woocommerce":
+            print(f"{website_url} is a woocommerce site. Starting scraping...")
+            try:
+                scrape_woocommerce_website(website_url, website_name, insert_product_data)
+                print(f"Scraping completed for {website_url}")
             except Exception as e:
                 traceback.print_exc()
                 print(f"Error scraping {website_url}: {e}")

@@ -21,8 +21,8 @@ def save_images(product_id, website_name, images):
     os.makedirs(folder_name, exist_ok=True)
     if os.listdir(folder_name):
         return None
-    for idx, image in enumerate(images):
-        image_url = image.get("src")
+    for idx, image_url in enumerate(images):
+        
         if image_url:
             image_path = os.path.join(folder_name, f"image_{idx + 1}.jpg")
             try:

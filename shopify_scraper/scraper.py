@@ -44,9 +44,9 @@ def scrape_website(url, website_name, insert_data_func):
         print(f"{website_name} : {len(products)}")
 
         for product in products:
-            print(f"Fetching product data for {product.get("id")}")
+            print(f"Fetching product data for {website_name} : {product.get('id')}")
             images = product.get("images", [])
-            image_folder = save_images(product["id"], website_name, images)
+            image_folder = save_images(product["id"], website_name, images.get("src", []))
             if not image_folder:
                 print("Image Folder already exists. Skipping !!!!!!!!!!!!!")
                 continue
