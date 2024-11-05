@@ -6,6 +6,10 @@ from bs4 import BeautifulSoup
 
 
 def extract_description(html_data):
+    if not isinstance(html_data, str):
+        # Return an empty string or a default value if html_data is None or not a string
+        return ""
+
     # Remove control characters
     clean_data = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', html_data)
     # Use BeautifulSoup to parse the HTML directly
@@ -42,7 +46,9 @@ def scrape_website(url, website_name, insert_data_func):
         for product in products:
             images = product.get("images", [])
             image_folder = save_images(product["id"], website_name, images)
-
+            if not image_folder:
+                print("Image Folder already exists. Skipping !!!!!!!!!!!!!")
+                continue
             product_data = {
                 "website_name" : website_name,
                 "website_url" : url,

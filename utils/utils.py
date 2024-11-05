@@ -19,7 +19,8 @@ def download_image(image_url, image_path):
 def save_images(product_id, website_name, images):
     folder_name = f"images/{website_name}/{product_id}"
     os.makedirs(folder_name, exist_ok=True)
-    
+    if os.listdir(folder_name):
+        return None
     for idx, image in enumerate(images):
         image_url = image.get("src")
         if image_url:
