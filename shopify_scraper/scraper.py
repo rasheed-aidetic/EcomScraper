@@ -6,6 +6,10 @@ from bs4 import BeautifulSoup
 
 
 def extract_description(html_data):
+    if not isinstance(html_data, str):
+        # Return an empty string or a default value if html_data is None or not a string
+        return ""
+
     # Remove control characters
     clean_data = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', html_data)
     # Use BeautifulSoup to parse the HTML directly
@@ -15,22 +19,37 @@ def extract_description(html_data):
     return description
 
 
-def fetch_product_data(url, page=1):
-    response = requests.get(f"{url}/products.json?limit=250&page={page}", timeout=5)
-    response.raise_for_status()
-    return response.json().get("products", [])
+def fetch_product_data(url):
+    print(f"fetching products details for {url}")
+    page = 1
+    products = []
+    while True:
+        response = requests.get(f"{url}/products.json?limit=250&page={page}", timeout=5)
+        response.raise_for_status()
+        products_data = response.json().get("products", [])
+        print(f"count of product data for page {page} is {len(products_data)}")
+        if not products_data:
+            print("breaking since no product data found")
+            break
+        products.extend(products_data)
+        print(f"Total product count after extending : {len(products)}")
+        page += 1
+
+    return products
+        
 
 
 def scrape_website(url, website_name, insert_data_func):
-    page = 1
-    while True:
-        products = fetch_product_data(url, page=page)
-        if not products:
-            break
+        products = fetch_product_data(url)
+        print(f"{website_name} : {len(products)}")
+
         for product in products:
+            print(f"Fetching product data for {product.get("id")}")
             images = product.get("images", [])
             image_folder = save_images(product["id"], website_name, images)
-
+            if not image_folder:
+                print("Image Folder already exists. Skipping !!!!!!!!!!!!!")
+                continue
             product_data = {
                 "website_name" : website_name,
                 "website_url" : url,
@@ -45,5 +64,3 @@ def scrape_website(url, website_name, insert_data_func):
                 "image_folder" : image_folder
             }
             insert_data_func(product_data, image_folder)
-        page += 1
-    print(len(products), " Products found")
