@@ -44,6 +44,7 @@ def scrape_website(url, website_name, insert_data_func):
         print(f"{website_name} : {len(products)}")
 
         for product in products:
+            print(f"Fetching product data for {product.get("id")}")
             images = product.get("images", [])
             image_folder = save_images(product["id"], website_name, images)
             if not image_folder:
