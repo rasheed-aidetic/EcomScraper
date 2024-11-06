@@ -6,6 +6,7 @@ from config import WEBSITES
 from db.database import initialize_db, insert_product_data
 from shopify_scraper.scraper import scrape_website as scrape_shopify_website
 from woocommerce_scrapper.scraper import scrape_website as scrape_woocommerce_website
+from wix_scrapper.scraper import scrape_website as scrape_wix_website
 from custom_scrappers.scraper import scrape_pood_cologne_data
 from utils.utils import check_platform
 from custom_scrappers.bobbi_brown_scrapper import scrape_product_details as bobbi_brown_scrapper
@@ -21,6 +22,7 @@ def main():
         website_url = website_url.rstrip("/")
         print(f"Checking platform for {website_url}")
 
+        # If the website is not shopify manually specify the platfor like "Wix" or "Woocommerce" here. There is no function for them in check platform
         platform = check_platform(website_url)
         website_name = website_url.split("//")[-1].replace("www.", "").split(".")[0]
 
@@ -42,22 +44,31 @@ def main():
         elif platform == "Woocommerce":
             print(f"{website_url} is a woocommerce site. Starting scraping...")
             try:
-                scrape_woocommerce_website(
-                    website_url, website_name, insert_product_data
-                )
+                scrape_woocommerce_website(website_url, website_name, insert_product_data)
                 print(f"Scraping completed for {website_url}")
             except Exception as e:
                 traceback.print_exc()
                 print(f"Error scraping {website_url}: {e}")
+
+        elif platform == "Wix":
+            print(f"{website_url} is a Wix site. Starting scraping...")
+            try:
+                scrape_wix_website(website_url, website_name, insert_product_data)
+                print(f"Scraping completed for {website_url}")
+            except Exception as e:
+                traceback.print_exc()
+                print(f"Error scraping {website_url}: {e}")
+
         else:
             print(
                 f"{website_url} is not a supported platform. Detected platform: {platform}"
             )
 
     # Use ThreadPoolExecutor to process each website in parallel
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-        executor.map(process_website, WEBSITES)
-
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    #     executor.map(process_website, WEBSITES)
+    for website in WEBSITES:
+        process_website(website)
     print("Data scraping completed.")
 
 

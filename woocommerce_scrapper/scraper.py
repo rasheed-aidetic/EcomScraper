@@ -10,8 +10,8 @@ def fetch_product_data(url):
     print(f"fetching products details for {url}")
     page = 1
     products = []
-    while page < 2:
-        response = requests.get(f"{url}/wp-json/wp/v2/product?limit=10&page={page}", timeout=15)
+    while True:
+        response = requests.get(f"{url}/wp-json/wp/v2/product?per_page=100&page={page}", timeout=15)
         try:
             response.raise_for_status()
         except:
@@ -59,29 +59,39 @@ def scrap_and_extract_images_from_shyle(product_url):
     return product_data
         
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def scrape_website(url, website_name, insert_data_func):
-        products = fetch_product_data(url)
-        print(f"{website_name} : {len(products)}")
+    products = fetch_product_data(url)
+    print(f"{website_name} : {len(products)}")
 
-        for product in products:
-            print(f"Fetching product data for {website_name} : {product.get('id')}")
-            images = scrap_and_extract_images_from_shyle(product.get("link"))
-            image_folder = save_images(product["id"], website_name, images.get("images"))
-            if not image_folder:
-                print("Image Folder already exists. Skipping !!!!!!!!!!!!!")
-                continue
-            product_data = {
-                "website_name" : website_name,
-                "website_url" : url,
-                "product_url" : product.get("yoast_head_json").get("og_url"),
-                "product_id" : product.get("id"),
-                "product_title" : product.get("yoast_head_json").get("title"),
-                "product_description" : product.get("yoast_head_json").get("og_title"),
-                "price" : 0,
-                "vendor" : website_name,
-                "product_type" : product.get("product_type", ""),
-                "tags" : ", ".join(product.get("tags", [])),
-                "image_folder" : image_folder
-            }
-            insert_data_func(product_data, image_folder)
+    def process_product(product):
+        print(f"Fetching product data for {website_name} : {product.get('id')}")
+        images = scrap_and_extract_images_from_shyle(product.get("link"))
+        image_folder = save_images(product["id"], website_name, images.get("images"))
+        if not image_folder:
+            print("Image Folder already exists. Skipping !!!!!!!!!!!!!")
+            return
+        
+        product_data = {
+            "website_name" : website_name,
+            "website_url" : url,
+            "product_url" : product.get("yoast_head_json").get("og_url"),
+            "product_id" : product.get("id"),
+            "product_title" : product.get("yoast_head_json").get("title"),
+            "product_description" : product.get("yoast_head_json").get("og_title"),
+            "price" : 0,
+            "vendor" : website_name,
+            "product_type" : product.get("product_type", ""),
+            "tags" : ", ".join(product.get("tags", [])),
+            "image_folder" : image_folder
+        }
+        
+        insert_data_func(product_data, image_folder)
+    
+    # Use ThreadPoolExecutor for threading in the for loop
+    with ThreadPoolExecutor(max_workers=5) as executor:  # Set max_workers as needed
+        futures = [executor.submit(process_product, product) for product in products]
+        
+        for future in as_completed(futures):
+            future.result()  # This ensures any exceptions are raised

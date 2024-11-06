@@ -3,6 +3,7 @@ import requests
 from utils.utils import save_images
 import re, json
 from bs4 import BeautifulSoup
+from concurrent.futures import ThreadPoolExecutor
 
 
 def extract_description(html_data):
@@ -34,33 +35,33 @@ def fetch_product_data(url):
         products.extend(products_data)
         print(f"Total product count after extending : {len(products)}")
         page += 1
-
     return products
-        
-
-
 def scrape_website(url, website_name, insert_data_func):
-        products = fetch_product_data(url)
-        print(f"{website_name} : {len(products)}")
-
-        for product in products:
-            print(f"Fetching product data for {website_name} : {product.get('id')}")
-            images = product.get("images", [])
-            image_folder = save_images(product["id"], website_name, images.get("src", []))
-            if not image_folder:
-                print("Image Folder already exists. Skipping !!!!!!!!!!!!!")
-                continue
-            product_data = {
-                "website_name" : website_name,
-                "website_url" : url,
-                "product_url" : f"{url}/products/{product['handle']}",
-                "product_id" : product["id"],
-                "product_title" : product.get("title"),
-                "product_description" : extract_description(product.get("body_html")),
-                "price" : float(product["variants"][0].get("price", 0)),
-                "vendor" : product.get("vendor"),
-                "product_type" : product.get("product_type"),
-                "tags" : ", ".join(product.get("tags", [])),
-                "image_folder" : image_folder
-            }
-            insert_data_func(product_data, image_folder)
+    products = fetch_product_data(url)
+    print(f"{website_name} : {len(products)}")
+    # Define a helper function to process each product
+    def process_product(product):
+        print(f'fetching product data for {product.get("id")}')
+        images = product.get("images", [])
+        image_folder = save_images(product["id"], website_name, images["src"])
+        if not image_folder:
+            print("Image Folder already exists. Skipping !!!!!!!!!!!!!")
+            return
+        product_data = {
+            "website_name": website_name,
+            "website_url": url,
+            "product_url": f"{url}/products/{product['handle']}",
+            "product_id": product["id"],
+            "product_title": product.get("title"),
+            "product_description": extract_description(product.get("body_html")),
+            "price": float(product["variants"][0].get("price", 0)),
+            "vendor": product.get("vendor"),
+            "product_type": product.get("product_type"),
+            "tags": ", ".join(product.get("tags", [])),
+            "image_folder": image_folder,
+        }
+        insert_data_func(product_data, image_folder)
+    # Use ThreadPoolExecutor to process products concurrently
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        # Submit each product to the executor
+        executor.map(process_product, products)
