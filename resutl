@@ -1,9 +1,0 @@
-Traceback (most recent call last):
-  File "/home/rashi-aidetic/Documents/Aidetic/EcomScraper/main.py", line 20, in main
-    scrape_website(website_url, website_name, insert_product_data)
-  File "/home/rashi-aidetic/Documents/Aidetic/EcomScraper/shopify_scraper/scraper.py", line 55, in scrape_website
-  File "/home/rashi-aidetic/Documents/Aidetic/EcomScraper/shopify_scraper/scraper.py", line 10, in extract_description
-    clean_data = re.sub(r'[\x00-\x1F\x7F-\x9F]', '', html_data)
-  File "/home/rashi-aidetic/.pyenv/versions/3.9.20/lib/python3.9/re.py", line 210, in sub
-    return _compile(pattern, flags).sub(repl, string, count)
-TypeError: expected string or bytes-like object
