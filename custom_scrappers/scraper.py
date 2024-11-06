@@ -1,11 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
-import urllib.request
-import os
 from utils.utils import save_images
-import random
-import sqlite3
-import config
 import hashlib
 
 
