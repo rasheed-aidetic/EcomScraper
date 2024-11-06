@@ -6,6 +6,7 @@ from utils.utils import save_images
 import random
 import sqlite3
 import config
+import hashlib
 
 
 def scrape_pood_cologne_data(url, website_name, insert_data_func):
@@ -46,6 +47,9 @@ def scrape_pood_cologne_data(url, website_name, insert_data_func):
             )
             image_path = None
             product_id = random.randint(1000000, 99999999)
+            combined_str = product_name + base_url
+            hash_value = hashlib.md5(combined_str.encode()).hexdigest()
+            product_id = int(hash_value[:8], 16)
 
             if image_url:
                 image_folder = save_images(product_id, website_name, [image_url])
