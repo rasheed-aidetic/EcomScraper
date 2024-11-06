@@ -46,7 +46,6 @@ def scrape_pood_cologne_data(url, website_name, insert_data_func):
                 image_tag["src"] if image_tag and "src" in image_tag.attrs else None
             )
             image_path = None
-            product_id = random.randint(1000000, 99999999)
             combined_str = product_name + base_url
             hash_value = hashlib.md5(combined_str.encode()).hexdigest()
             product_id = int(hash_value[:8], 16)
